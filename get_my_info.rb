@@ -6,7 +6,9 @@ require 'git'
 def travis_stuff(repo_name, g)
     repo = Travis::Repository.find(repo_name)
 
-    repo.each_build do |build|
+    puts "Pulling builds, this may take a bit..."
+    # If we did repo.each_build, this would go fast, but iterate in reverse
+    repo.builds.reverse_each do |build|
         commit = build.commit
         begin
             g.checkout(commit.sha)
