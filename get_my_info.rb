@@ -28,13 +28,16 @@ end
 
 def get_fail_history(file_paths)
     most_fails = 0
+    total_fails = 0
     file_paths.each do |path|
         if $fail_history[path] > most_fails
             most_fails = $fail_history[path]
         end
+        total_fails += $fail_history[path]
     end
 
-    return most_fails
+    #TODO most or total?
+    return total_fails
 end
 
 def update_fail_history(file_paths)
@@ -57,7 +60,7 @@ end
 def analyze_commit(g, root_path, files_changed)
     diff = g.diff('HEAD', 'HEAD~1')
     flux = diff.insertions + diff.deletions
-    highest_cc = run_lizard(files_changed, root_path)
+    highest_cc = 0 # TODO run_lizard(files_changed, root_path)
     history = get_fail_history(files_changed)
     return highest_cc, flux, history
 end
@@ -68,7 +71,7 @@ def travis_stuff(repo_name, g)
     puts "Pulling builds, this may take a bit..."
     # If we did repo.each_build, this would go fast, but iterate in reverse
     CSV.open('results.csv', 'w') do |csv|
-        csv << ['Build State', 'Cyclomatic_complexity', 'Flux', 'Fail History', 'Build Number', 'Commit SHA']
+        csv << ['Build State', 'Cyclomatic_complexity', 'Flux', 'Fail History', 'Total Failures', 'History/Number builds', 'History / Number failed builds', 'Build Number', 'Commit SHA']
         repo.builds.reverse_each do |build|
             commit = build.commit
             begin
