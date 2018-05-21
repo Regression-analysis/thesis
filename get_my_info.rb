@@ -13,10 +13,17 @@ $total_failures = 0
 $fail_history = Hash.new(0)
 
 def run_lizard(file_paths, root_path)
+    ##
+    # This function runs the lizard tool (https://github.com/terryyin/lizard)
+    # on the given file paths.
+    #
+    # This tool can calculate number of lines of code, cyclomatic
+    # complexity, and a couple other metrics.
+    ##
     highest_complexity = 0
     file_paths.each do |file_path|
-        i = lizard.analyze_file(root_path+'/'+file_path)
-        i.function_list.each do |func_info|
+        lizard_analysis = lizard.analyze_file(root_path+'/'+file_path)
+        lizard_analysis.function_list.each do |func_info|
             cc = func_info.__dict__['cyclomatic_complexity']
             if cc > highest_complexity
                 highest_complexity = cc
@@ -27,6 +34,9 @@ def run_lizard(file_paths, root_path)
 end
 
 def get_fail_history(file_paths)
+    ##
+    # This pulls the "fail history" value for the given paths
+    ##
     most_fails = 0
     total_fails = 0
     file_paths.each do |path|
@@ -36,11 +46,15 @@ def get_fail_history(file_paths)
         total_fails += $fail_history[path]
     end
 
-    #TODO most or total?
+    #TODO highest failing file or total fails over all files?
     return total_fails
 end
 
 def update_fail_history(file_paths)
+    ##
+    # Increment the fail history values for the given
+    # file paths
+    ##
     file_paths.each do |path|
         $fail_history[path] += 1
     end
@@ -58,9 +72,12 @@ end
 
 
 def analyze_commit(g, root_path, files_changed)
+    ##
+    # Calculate the different metrics for each file
+    ##
     diff = g.diff('HEAD', 'HEAD~1')
     flux = diff.insertions + diff.deletions
-    highest_cc = 0 # TODO run_lizard(files_changed, root_path)
+    highest_cc = run_lizard(files_changed, root_path)
     history = get_fail_history(files_changed)
     return highest_cc, flux, history
 end
@@ -86,7 +103,7 @@ def travis_stuff(repo_name, g)
                     update_fail_history(files_changed)
                 end
             rescue Git::GitExecuteError => _
-                #puts "Unable to checkout #{commit.sha} from #{build.number}"
+                puts "Unable to checkout #{commit.sha} from #{build.number}"
             end
         end
     end
