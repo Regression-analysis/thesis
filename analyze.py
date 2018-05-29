@@ -12,30 +12,29 @@ data = {} # key: header, value: array of all values
 passed_data = {}
 failed_data = {}
 
-def parse_files(filenames):
+def parse_file(filename):
     headers = []
-    for filename in filenames:
-        with open(filename, 'r') as f:
-            headers = f.readline()
-            headers = headers[:-1]
-            headers = headers.split(',')
-            for header in headers:
-                data[header] = []
-                passed_data[header] = []
-                failed_data[header] = []
+    with open(filename, 'r') as f:
+        headers = f.readline()
+        headers = headers[:-1]
+        headers = headers.split(',')
+        for header in headers:
+            data[header] = []
+            passed_data[header] = []
+            failed_data[header] = []
 
-            for line in f.readlines():
-                line = line[:-1]
-                line_values = line.split(',')
-                i = 0
-                for header in headers:
-                    value = convert_if_possible(line_values[i])
-                    i += 1
-                    data[header].append(value)
-                    if line_values[0] == 'failed':
-                        failed_data[header].append(value)
-                    elif line_values[0] == 'passed':
-                        passed_data[header].append(value)
+        for line in f.readlines():
+            line = line[:-1]
+            line_values = line.split(',')
+            i = 0
+            for header in headers:
+                value = convert_if_possible(line_values[i])
+                i += 1
+                data[header].append(value)
+                if line_values[0] == 'failed':
+                    failed_data[header].append(value)
+                elif line_values[0] == 'passed':
+                    passed_data[header].append(value)
 
     return data, passed_data, failed_data
 
@@ -73,7 +72,7 @@ def enter_prompt():
         auto_suggest=AutoSuggestFromHistory(),
         enable_history_search=True)
 
-    data, passed_data, failed_data = parse_files(sys.argv[1:])
+    data, passed_data, failed_data = parse_file(sys.argv[1])
     while True:
         try:
             execute_command(session.prompt('> '))
@@ -83,17 +82,10 @@ def enter_prompt():
 def main():
     enter_prompt()
 
-def print_averages_and_stuff(args=None):
-    to_print = data
-    key_wanted = None
-    if args:
-        if args[0] == "passed":
-            to_print = passed_data
-        elif args[0] == "failed":
-            to_print = failed_data
-    for key in to_print:
-        if isinstance(to_print[key][0], float) :
-            print(key, ':', np.mean(to_print[key]))
+def print_averages_and_stuff():
+    for key in data:
+        if isinstance(data[key][0], float) :
+            print(key, ':', np.mean(data[key]))
 
 def show_help():
     """ Shows help info """
