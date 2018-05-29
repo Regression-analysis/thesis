@@ -46,8 +46,7 @@ def get_fail_history(file_paths)
         total_fails += $fail_history[path]
     end
 
-    #TODO highest failing file or total fails over all files?
-    return total_fails
+    return total_fails, most fails
 end
 
 def update_fail_history(file_paths)
@@ -78,8 +77,8 @@ def analyze_commit(g, root_path, files_changed)
     diff = g.diff('HEAD', 'HEAD~1')
     flux = diff.insertions + diff.deletions
     highest_cc = run_lizard(files_changed, root_path)
-    history = get_fail_history(files_changed)
-    return highest_cc, flux, history
+    total_fails, most_fails = get_fail_history(files_changed)
+    return highest_cc, flux, total_fails, most_fails
 end
 
 def travis_stuff(repo_name, g)
@@ -88,17 +87,17 @@ def travis_stuff(repo_name, g)
     puts "Pulling builds, this may take a bit..."
     # If we did repo.each_build, this would go fast, but iterate in reverse
     CSV.open('results.csv', 'w') do |csv|
-        csv << ['Build State', 'Cyclomatic_complexity', 'Flux', 'Fail History', 'Total Failures', 'History/Number builds', 'History / Number failed builds', 'Build Number', 'Commit SHA']
+        csv << ['Build State', 'Cyclomatic_complexity', 'Flux', 'Most failing file', 'History (total number of fails, used in later columns)', 'Total Failures', 'History/Number builds', 'History / Number failed builds', 'Build Number', 'Commit SHA']
         repo.builds.reverse_each do |build|
             commit = build.commit
             begin
                 g.checkout(commit.sha)
                 files_changed = get_changed_file_paths(g)
-                cc, flux, history = analyze_commit(g, '/tmp/thesis-checkout/'+repo_name, files_changed)
+                cc, flux, history, most_fails = analyze_commit(g, '/tmp/thesis-checkout/'+repo_name, files_changed)
                 history_over_total = history/build.number.to_f
                 history_over_fails = $total_failures != 0 ? history/$total_failures.to_f : 1
-                puts "#{build.number}: #{build.state}, #{cc}, #{flux}, #{history}, #{$total_failures}, #{history_over_total}, #{history_over_fails}, #{commit.sha}"
-                csv << [build.state, cc, flux, history, $total_failures, history_over_total, history_over_fails, build.number, commit.sha]
+                puts "#{build.number}: #{build.state}, #{cc}, #{flux}, #{most_fails}, #{history}, #{$total_failures}, #{history_over_total}, #{history_over_fails}, #{commit.sha}"
+                csv << [build.state, cc, flux, most_fails, history, $total_failures, history_over_total, history_over_fails, build.number, commit.sha]
                 if build.state == 'failed'
                     update_fail_history(files_changed)
                 end
