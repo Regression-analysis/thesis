@@ -43,6 +43,7 @@ class Analysis():
 
         indicators = self.calculate_indicators()
         print(indicators)
+        return (self.cur_commit.hexsha, indicators)
 
     def analyze_current_commit(self, first_time=False):
         if first_time:
@@ -107,11 +108,14 @@ def main():
     print('Perphecy Replica')
     repo_path = "/home/kevin/thesis/git/"
     a = Analysis(repo_path)
-    while True:
-        try:
-            a.step()
-        except StopIteration:
-            break
+    with open('perphecy_replica_results.txt', 'w+') as f:
+        while True:
+            try:
+                indicators = a.step()
+                f.write(str(indicators)+'\n')
+                f.flush()
+            except StopIteration:
+                break
 
 
 if __name__ == "__main__":
