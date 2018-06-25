@@ -14,13 +14,12 @@ def run_lizard(file_paths):
       'my_filename': [FunctionInfo, ...]
     }
     """
-
     function_infos = {}
 
     for file_path in file_paths:
         # Filter out anything lizard cant parse
         if not lizard_can_parse(file_path):
-            print('Lizard cant parse', file_path)
+#            print('Lizard cant parse', file_path)
             continue
 
         lizard_analysis = lizard.analyze_file(file_path)
