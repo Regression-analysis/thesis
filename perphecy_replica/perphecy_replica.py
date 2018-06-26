@@ -3,6 +3,7 @@
 from lizard_wrapper import run_lizard
 from git import Repo
 from git_helpers import get_changed_files, get_tracked_files
+from perf_test_runner import *
 
 class Config():
     def __init__(self, del_func_X=1, new_func_X=1):
@@ -25,7 +26,15 @@ class Analysis():
         self.cur_commit = next(self.commit_iter)
         self.prev_commit = None
 
+        self.repo.git.checkout(self.cur_commit.hexsha)
         self.analyze_current_commit(first_time=True)
+        self.run_benchmarks()
+
+    def run_benchmarks(self):
+        self.cur_analysis['benchmarks'] = {}
+        benchmarks = get_perf_tests_git(self.repo_path)
+        for benchmark in benchmarks:
+            self.cur_analysis['benchmarks'][benchmark] = run_benchmark_git(self.repo_path, benchmark)
 
     def step(self):
         """
@@ -40,6 +49,7 @@ class Analysis():
         self.cur_analysis = {}
 
         self.analyze_current_commit()
+        self.run_benchmarks()
 
         indicators = self.calculate_indicators()
         print(indicators)
