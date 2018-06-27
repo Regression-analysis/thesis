@@ -35,7 +35,9 @@ module.exports = {
 
         return request.post(create_droplet_post)
             .then(body => {
-                console.log('Created', body.droplet.name, body.droplet.id);
+                console.log('Created new droplet:',
+                    body.droplet.name,
+                    body.droplet.id);
                 return body.droplet;
             });
     },
