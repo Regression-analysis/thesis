@@ -33,19 +33,22 @@ function create_droplet(name, ssh_keys) {
     }
 
     return request.post(create_droplet_post)
-        .then(body => JSON.parse(body));
+        .then(body => body.droplet);
 }
 
 function delete_droplet(droplet_id) {
     return request({
         method: 'DELETE',
         url: 'https://api.digitalocean.com/v2/droplets/'+droplet_id,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer '+TOKEN,
+        },
     })
 }
 
 droplets_to_create = [
     'Worker1',
-    'Worker2',
 ];
 
 get_account_ssh_keys()
@@ -57,15 +60,14 @@ get_account_ssh_keys()
             promises.push( create_droplet(name, ssh_key_ids) );
         });
 
-        return promises;
+        return Promise.all(promises);
     })
     .then(created_droplets => {
-        console.log(created_droplets);
         const promises = [];
 
         created_droplets.forEach(droplet => {
             promises.push( delete_droplet(droplet.id) );
         });
 
-        return promises;
+        return Promise.all(promises);
     });
