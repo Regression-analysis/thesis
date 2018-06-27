@@ -220,7 +220,7 @@ def travis_stuff(repo_name, g)
                 next
             end
             files_changed = get_changed_file_paths(g)
-            highest_cc, total_cc, flux, history = analyze_commit(g, '/tmp/thesis-checkout/'+repo_name, files_changed)
+            highest_cc, total_cc, flux, history = analyze_commit(g, 'checkouts/'+repo_name, files_changed)
             history_over_total = history/build.number.to_f
             history_over_fails = $total_failures != 0 ? history/$total_failures.to_f : 1
             puts "#{build.number}: #{build.state}, #{highest_cc}, #{total_cc}, #{flux}, #{history}, #{$total_failures}, #{history_over_total}, #{history_over_fails}, #{commit.sha}"
@@ -235,14 +235,14 @@ end
 
 def open_git(url, repo_name)
     g = nil
-    unless File.directory?('/tmp/thesis-checkout/'+repo_name)
+    unless File.directory?('checkouts/'+repo_name)
         g = Git.clone(
             url,
             repo_name,
-            :path => '/tmp/thesis-checkout',
+            :path => 'checkouts',
         )
     else
-        g = Git.open('/tmp/thesis-checkout/'+repo_name)
+        g = Git.open('checkouts/'+repo_name)
         g.fetch
     end
     return g
