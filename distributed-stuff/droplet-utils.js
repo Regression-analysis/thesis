@@ -34,7 +34,10 @@ module.exports = {
         }
 
         return request.post(create_droplet_post)
-            .then(body => body.droplet);
+            .then(body => {
+                console.log('Created', body.droplet.name, body.droplet.id);
+                return body.droplet;
+            });
     },
 
     delete_droplet: (droplet_id) => {
@@ -46,5 +49,16 @@ module.exports = {
                 'Authorization': 'Bearer '+TOKEN,
             },
         })
+    },
+
+    get_droplet: (droplet_id) => {
+        return request.get({
+            url: 'https://api.digitalocean.com/v2/droplets/'+droplet_id,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer '+TOKEN,
+            },
+        })
+            .then(body => JSON.parse(body).droplet);
     },
 };
