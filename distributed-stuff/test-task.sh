@@ -26,10 +26,7 @@ do
     echo "Building $COMMIT"
     make
     echo "Testing $COMMIT"
-    cd t/perf
-    ./run . origin/master . p3400-rebase.sh
-    cd -
-    #make -C t/perf
+    make -C t/perf
     zip $COMMIT-results.zip -r t/perf/test-results ~/task.out ~/task.err
     mv $COMMIT-results.zip ~
 
