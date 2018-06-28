@@ -140,7 +140,7 @@ DO.get_account_ssh_keys()
                 .then(() => {
                     // Remove droplet from our list of droplets
                     var index = droplets.indexOf(drop);
-                    if (index !== -1) array.splice(droplets, 1);
+                    if (index !== -1) droplets.splice(index, 1);
                 });
         }, conductor_finished_callback, require('./commits_to_run_on'));
     })

@@ -31,7 +31,7 @@ app.get('/finished/:commit', (req, res) => {
         return;
     }
     
-    if(commits_in_progress[commit] !== machine_ip) {
+    if(commits_in_progress[commit].machine !== machine_ip) {
         console.error('Incorrect machine trying to submit commit deets:', machine_ip, commit);
         res.status(500).send('You are not assigned that commit');
         return;
@@ -81,7 +81,7 @@ app.get('/nextcommit', (req, res) => {
 
 module.exports = {
     start: (kill_instance_handler, finished_cb, all_commits) => {
-        app.get('/killme', kill_instance_handler);
+        app.get('/killme/:msg', kill_instance_handler);
         finished_callback = finished_cb;
         commits_to_run = all_commits;
 
