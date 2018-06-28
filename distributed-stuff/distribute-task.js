@@ -3,6 +3,8 @@ const DO = require('./droplet-utils');
 const ssh_utils = require('./ssh-utils');
 const fs = require('fs');
 
+let conductor = require('./conductor');
+
 const argv = require('minimist')(process.argv.slice(2));
 
 if(argv.help) {
@@ -66,13 +68,16 @@ function wait_for_droplet_to_boot(droplet_id) {
             DO.get_droplet(droplet_id)
                 .then(droplet => {
                     if(droplet.status === "active") {
+                        // Give it another break to calm itself,
+                        // then continue
+                        console.log(`${droplet.name} booted, waiting 30s`);
                         setTimeout(() => {
                             resolve(droplet)
-                        }, 5000);
+                        }, 30000);
                     } else {
                         if(tries > 0) {
                             tries--;
-                            setTimeout(check_if_active, 5000);
+                            setTimeout(check_if_active, 1000);
                         } else {
                             reject(droplet);
                         }
@@ -91,6 +96,12 @@ function create_droplet_and_wait_for_boot(name, ssh_key_ids) {
         ));
 }
 
+let conductor_finished_callback;
+let conductor_finished_promise = new Promise((resolve, reject) => {
+    conductor_finished_callback = () => {
+        resolve();
+    };
+});
 let droplets = [];
 DO.get_account_ssh_keys()
     .then(ssh_keys => ssh_keys.map(k => k.id))
@@ -113,10 +124,47 @@ DO.get_account_ssh_keys()
             })
         );
     })
+    .then(() => {
+        // Start our conductor server
+        conductor.start((req, res) => {
+            const ip = conductor.get_machine_ip(req);
+            console.log('ip addr', ip, 'requested kill because', req.params.msg);
+            let drop = droplets.find(d => d.networks.v4[0].ip_address === ip);
+            if(!drop) {
+                console.error('Cant find droplet with ip', ip);
+                res.status(500).send('I dont know who you are');
+                return;
+            }
+            res.send();
+            DO.delete_droplet(drop.id)
+                .then(() => {
+                    // Remove droplet from our list of droplets
+                    var index = droplets.indexOf(drop);
+                    if (index !== -1) array.splice(droplets, 1);
+                });
+        }, conductor_finished_callback, require('./commits_to_run_on'));
+    })
+    .then(() => {
+        console.log('Start the scripts on all the clients');
+        const cmd = `chmod +x ~/${argv.task} && nohup ~/${argv.task} > task.out 2> task.err < /dev/null &`
+        return Promise.all(
+            droplets.map(droplet => ssh_utils.start_command(cmd, droplet))
+        );
+    })
+    .then(() => {
+        // Wait for the conductor to tell us we are done
+        return conductor_finished_promise;
+    })
     .catch(err => console.error(err))
     .finally(() => {
-        // Delete the created droplets
+        console.log('Deleting the created droplets in 60 seconds');
         return Promise.all(
-            droplets.map(droplet => DO.delete_droplet(droplet.id))
+            droplets.map(droplet => new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    DO.delete_droplet(droplet.id)
+                        .then(resolve)
+                        .catch(reject);
+                }, 60000);
+            }))
         );
     });
