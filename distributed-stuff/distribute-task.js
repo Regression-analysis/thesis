@@ -82,6 +82,15 @@ function wait_for_droplet_to_boot(droplet_id) {
                             reject(droplet);
                         }
                     }
+                })
+                .catch(e => {
+                    console.error(e);
+                    if(tries > 0) {
+                        tries--;
+                        setTimeout(check_if_active, 1000);
+                    } else {
+                        reject(droplet);
+                    }
                 });
         };
 
@@ -139,8 +148,8 @@ DO.get_account_ssh_keys()
             DO.delete_droplet(drop.id)
                 .then(() => {
                     // Remove droplet from our list of droplets
-                    var index = droplets.indexOf(drop);
-                    if (index !== -1) droplets.splice(index, 1);
+                    droplets = droplets.filter(droplet =>
+                        droplet.name !== drop.name)
                 });
         }, conductor_finished_callback, require('./commits_to_run_on'));
     })
@@ -168,3 +177,11 @@ DO.get_account_ssh_keys()
             }))
         );
     });
+
+
+process.on('SIGINT', function() {
+    console.log("Caught interrupt signal");
+
+    Promise.all(droplets.map(d => DO.delete_droplet(d.id)))
+        .then(() => process.exit(1));
+});

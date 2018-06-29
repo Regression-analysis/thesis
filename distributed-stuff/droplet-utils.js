@@ -43,6 +43,7 @@ module.exports = {
     },
 
     delete_droplet: (droplet_id) => {
+        console.log('Destroying droplet', droplet_id);
         return request({
             method: 'DELETE',
             url: 'https://api.digitalocean.com/v2/droplets/'+droplet_id,

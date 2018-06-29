@@ -1,7 +1,10 @@
 const ssh_utils = require('./ssh-utils');
 const express = require('express');
+const morgan = require('morgan');
 const app = express();
 const port = process.env.PORT || 8080;
+
+app.use(morgan('dev'));
 
 function get_machine_ip(req) {
     return req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -14,11 +17,11 @@ let commits_in_progress = {};
 let finished_callback; // Call this when everything is all over
 
 app.get('/observe', (req, res) => {
-    res.send({
+    res.send(require('./observe')({
         commits_to_run: commits_to_run,
         commits_completed: commits_completed,
         commits_in_progress: commits_in_progress,
-    });
+    }));
 });
 
 app.get('/finished/:commit', (req, res) => {
@@ -30,7 +33,7 @@ app.get('/finished/:commit', (req, res) => {
         res.status(500).send('Invalid commit SHA');
         return;
     }
-    
+
     if(commits_in_progress[commit].machine !== machine_ip) {
         console.error('Incorrect machine trying to submit commit deets:', machine_ip, commit);
         res.status(500).send('You are not assigned that commit');
@@ -62,6 +65,7 @@ app.get('/finished/:commit', (req, res) => {
         .catch(err => {
             console.error('Unable to retrieve', commit, 'from', machine_ip);
             console.error(err);
+            res.status(500).send(err);
         });
 });
 
