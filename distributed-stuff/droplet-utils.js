@@ -55,6 +55,7 @@ module.exports = {
     },
 
     get_droplet: (droplet_id) => {
+        console.log('Polling droplet info', droplet_id);
         return request.get({
             url: 'https://api.digitalocean.com/v2/droplets/'+droplet_id,
             headers: {

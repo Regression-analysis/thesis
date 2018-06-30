@@ -77,17 +77,17 @@ function wait_for_droplet_to_boot(droplet_id) {
                     } else {
                         if(tries > 0) {
                             tries--;
-                            setTimeout(check_if_active, 1000);
+                            setTimeout(check_if_active, 5000);
                         } else {
                             reject(droplet);
                         }
                     }
                 })
                 .catch(e => {
-                    console.error(e);
+                    console.error('Unable to get info for droplet', droplet_id);
                     if(tries > 0) {
                         tries--;
-                        setTimeout(check_if_active, 1000);
+                        setTimeout(check_if_active, 10000);
                     } else {
                         reject(droplet);
                     }
