@@ -1,0 +1,8 @@
+settings -languages C++
+settings -metrics all
+settings -MetricsFileNameDisplayMode FullPath
+settings -MetricsShowDeclaredInFile on
+settings -MetricsDeclaredInFileDisplayMode FullPath
+add @git_files.txt
+analyze -all
+metrics
