@@ -2,7 +2,7 @@
 set -x
 
 apt update
-apt install -y make gcc libssl-dev expat libcurl4-openssl-dev libexpat1-dev gettext zip
+apt install -y make gcc libssl-dev expat libcurl4-openssl-dev libexpat1-dev gettext zip linux-tools-generic linux-tools-common linux-tools-`uname -r`
 cpan JSON
 
 cd ~
@@ -39,29 +39,32 @@ do
     if [ "$?" -ne "0" ] ; then
         echo "BUILD MAKE FAILED FOR COMMIT $COMMIT"
     fi
+
     echo "Testing $COMMIT"
     # Now we need to run each test individually
     cd t/perf
+    # BUT first we have to run one test, to guarantee everything is fully built
+    # running a test does some make steps, but this will impact our profiler
+    # thus, run a small test, then actually do the profiling
+    ./run . origin/master . p0000-perf-lib-sanity.sh
     rm -rf perf-reports
     mkdir perf-reports
-    for filename in t/perf/p*.sh ; do
-        if [ filename -eq "perf-lib.sh" ]; then
-            continue
-        fi
-
-        perf record -e instructions:u "./run . origin/master . $filename"
+    files=$(ls | grep "^p.*.sh" | grep -v perf-lib.sh)
+    for filename in $files ; do
+        echo running $filename
+        perf record -e instructions:u ./run . origin/master . $filename
         if [ "$?" -ne "0" ] ; then
-            touch perf-reports/$filename_record_failed
+            touch perf-reports/$filename-record_failed
             continue
         fi
         perf report -t , -d git > perf-reports/$filename-perf-report.csv
         if [ "$?" -ne "0" ] ; then
-            touch perf-reports/$filename_report_failed
+            touch perf-reports/$filename-report_failed
             continue
         fi
     done
-    zip $COMMIT-perf-reports.zip -r perf-reports
-    mv $COMMIT-perf-reports.zip ~
+    zip $COMMIT-results.zip -r perf-reports ~/task.out ~/task.err
+    mv $COMMIT-results.zip ~
     cd -
 
 
