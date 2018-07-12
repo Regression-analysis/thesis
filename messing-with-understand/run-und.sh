@@ -6,6 +6,11 @@ mkdir -p und_results/
 
 for commit in $COMMITS;
 do
+    # skip if we already have the resuts
+    if [ -f "und_results/$commit.csv" ] ; then
+        continue
+    fi
+
     # checkout the commit
     cd ~/thesis/git
     git checkout $commit
