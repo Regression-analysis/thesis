@@ -3,6 +3,9 @@ from os import listdir
 from os.path import isfile, join
 from subprocess import call
 
+def compile_git(source_root_path):
+    call(['make', '-C', source_root_path])
+
 def get_perf_tests_git(source_root_path):
     perf_test_path = source_root_path + '/t/perf'
     files = [f for f in listdir(perf_test_path) if isfile(join(perf_test_path, f))]

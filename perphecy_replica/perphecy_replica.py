@@ -6,9 +6,10 @@ from git_helpers import get_changed_files, get_tracked_files
 from perf_test_runner import *
 
 class Config():
-    def __init__(self, del_func_X=1, new_func_X=1):
+    def __init__(self, del_func_X=1, new_func_X=1, top_chg_len_X=1):
         self.del_func_X = del_func_X
         self.new_func_X = new_func_X
+        self.top_chg_len_X = top_chg_len_X
 
 
 class Analysis():
@@ -28,9 +29,10 @@ class Analysis():
 
         self.repo.git.checkout(self.cur_commit.hexsha)
         self.analyze_current_commit(first_time=True)
-        self.run_benchmarks()
+        #self.run_benchmarks()
 
     def run_benchmarks(self):
+        compile_git(self.repo_path)
         self.cur_analysis['benchmarks'] = {}
         benchmarks = get_perf_tests_git(self.repo_path)
         for benchmark in benchmarks:
@@ -49,7 +51,7 @@ class Analysis():
         self.cur_analysis = {}
 
         self.analyze_current_commit()
-        self.run_benchmarks()
+        #self.run_benchmarks()
 
         indicators = self.calculate_indicators()
         print(indicators)
@@ -65,6 +67,7 @@ class Analysis():
         changed_files = get_changed_files(self.cur_commit)
         changed_files = [self.repo_path + f for f in changed_files]
         new_lizard_results = run_lizard(changed_files)
+        self.cur_analysis['new_lizard_results'] = new_lizard_results
         self.cur_analysis['lizard_results'] = self.prev_analysis['lizard_results']
         for key, value in new_lizard_results.items():
             self.cur_analysis['lizard_results'][key] = value
@@ -77,8 +80,32 @@ class Analysis():
         indicators = {}
         indicators['Del Func >= X'] = self.del_func_indicator()
         indicators['New Func >= X'] = self.new_func_indicator()
+        indicators['Top Chg Len >= X%'] = self.top_change_length_indicator()
 
         return indicators
+
+    def top_change_length_indicator(self):
+        return self.calc_top_function_change_length_percent() > self.config.top_chg_len_X
+
+    def calc_top_function_change_length_percent(self):
+        top = 0
+        functions_with_different_length = []
+        for filename, functions in self.cur_analysis['new_lizard_results'].items():
+            if filename not in self.prev_analysis['lizard_results']:
+                continue
+
+            # Put functions into a hash so we dont do this in O(n^2)
+            functions_we_maybe_changed = {}
+            for function in functions:
+                functions_we_maybe_changed[function.long_name] = function
+                import ipdb; ipdb.set_trace()
+
+            for function in self.prev_analysis['lizard_analysis'][filename]:
+                if function.long_name in functions_we_maybe_changed:
+                    if function.nloc != functions_we_maybe_changed[function.long_name].nloc:
+                        functions_with_different_length.append(function.long_name)
+
+        return top
 
     def del_func_indicator(self):
         return len(self.calc_deleted_functions()) >= self.config.del_func_X
