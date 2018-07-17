@@ -39,7 +39,7 @@ def calc_std_devs(headers, values):
 
 
 def significant_change(v, w, std_dev):
-    return math.fabs(v - w) > std_dev
+    return math.fabs(v - w) > std_dev*2 and v < w
 
 def find_significant_changes(headers, values, std_devs):
     significant_changes = []
@@ -65,10 +65,20 @@ def main():
     headers, values = parse_file(sys.argv[1])
     std_devs = calc_std_devs(headers, values)
     significant_changes = find_significant_changes(headers, values, std_devs)
+
+    print("There are", len(headers) - 1, "tests total")
+    print("run on", len(values[0]), "different commits")
     for index, change_list in enumerate(significant_changes):
         if change_list is None:
             continue
-        print(headers[index], change_list[0], std_devs[index])
+        print(headers[index], len(change_list), std_devs[index])
+
+    regressed_commits = set()
+    for change_list in significant_changes:
+        for c1, c2 in change_list or []:
+            regressed_commits.add(c1)
+            
+    print("There are a total of", len(regressed_commits), "commits that have at least one test regressing")
 
 if __name__ == '__main__':
     main()
