@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 from lizard_wrapper import run_lizard
 from git import Repo
 from git_helpers import get_changed_files, get_tracked_files

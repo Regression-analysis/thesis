@@ -62,23 +62,6 @@ def find_significant_changes(aggregated_tests, std_devs, commit_shas):
 
     return significant_changes
 
-def print_info(headers, values, std_devs, significant_changes):
-    print("There are", len(headers) - 1, "tests total")
-    print("run on", len(values[0]), "different commits")
-    for index, change_list in enumerate(significant_changes):
-        if change_list is None:
-            continue
-        print(headers[index], len(change_list), std_devs[index])
-
-    regressed_commits = set()
-    for change_list in significant_changes:
-        for c1, c2 in change_list or []:
-            regressed_commits.add(c1)
-
-    print("There are a total of",
-            len(regressed_commits),
-            "commits that have at least one test regressing")
-
 
 def aggregate_subtests(headers, values):
     aggregated_tests = {} # add up the subtest times
@@ -106,7 +89,17 @@ def aggregate_subtests(headers, values):
 
     return aggregated_tests
 
-def main():
+
+def print_significant_changes(significant_changes):
+    for test in significant_changes:
+        print(
+                test,
+                'has',
+                len(significant_changes[test]),
+                'significant regressions')
+
+
+def determine_significant_changes():
     # Parse csv file
     headers, values = parse_file(sys.argv[1])
     commit_shas = values[0]
@@ -121,12 +114,13 @@ def main():
             std_devs,
             commit_shas)
 
-    for test in significant_changes:
-        print(
-                test,
-                'has',
-                len(significant_changes[test]),
-                'significant regressions')
+    return significant_changes
+
+
+def main():
+    significant_changes = determine_significant_changes()
+    print_significant_changes(significant_changes)
+
 
 if __name__ == '__main__':
     main()

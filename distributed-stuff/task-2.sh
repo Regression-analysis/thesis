@@ -1,9 +1,6 @@
 #!/bin/bash
 set -x
 
-apt update
-apt install -y make gcc libssl-dev expat libcurl4-openssl-dev libexpat1-dev gettext zip linux-tools-generic linux-tools-common linux-tools-`uname -r`
-cpan JSON
 
 cd ~
 git clone https://github.com/git/git
@@ -68,8 +65,8 @@ do
     cd -
 
 
-    curl "research.tiks.pw/finished/$COMMIT"
+# UNDO curl "research.tiks.pw/finished/$COMMIT"
 done
 
-curl research.tiks.pw/killme/conductor_said_i_was_done
-shutdown -h now
+# curl research.tiks.pw/killme/conductor_said_i_was_done
+# UNDO shutdown -h now
