@@ -99,9 +99,9 @@ def print_significant_changes(significant_changes):
                 'significant regressions')
 
 
-def determine_significant_changes():
+def determine_significant_changes(results_file):
     # Parse csv file
-    headers, values = parse_file(sys.argv[1])
+    headers, values = parse_file(results_file)
     commit_shas = values[0]
     # Aggregate subtests into their total test execution times
     aggregated_tests = aggregate_subtests(headers, values)
@@ -118,7 +118,10 @@ def determine_significant_changes():
 
 
 def main():
-    significant_changes = determine_significant_changes()
+    if sys.argv[1] is None:
+        print("You need to give the path to the results csv file")
+
+    significant_changes = determine_significant_changes(sys.argv[1])
     print_significant_changes(significant_changes)
 
 
