@@ -41,7 +41,7 @@ def calc_std_devs(aggregated_tests):
 
 
 def significant_change(v, w, std_dev):
-    return math.fabs(v - w) > std_dev*2 and v < w
+    return math.fabs(v - w) > std_dev*2
 
 def find_significant_changes(aggregated_tests, std_devs, commit_shas):
     significant_changes = {}
