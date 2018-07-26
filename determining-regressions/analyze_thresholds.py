@@ -1,3 +1,4 @@
+import math
 from determine_significant_changes import determine_significant_changes
 
 
@@ -35,7 +36,8 @@ def evaluate_thresholds(thresholds, significant_changes):
     return ([h / hit_truths for h in hits], [d / dismiss_truths for d in dismisses])
 
 
-def main():
+def make_csv():
+    """ The original main function """
     significant_changes = determine_significant_changes("results.csv")
     everything = { 'thresholds': [], 'hit_rates': [], 'dismiss_rates': [] }
     thresholds = [0,0,0,0, 0,0,0,0]
@@ -55,6 +57,11 @@ def main():
                 everything['hit_rates'],
                 everything['dismiss_rates']):
             print('%.3f' % t[i], '%.3f' % h[i], '%.3f' % d[i])
+
+
+
+def main():
+    make_csv()
 
 
 if __name__ == '__main__':

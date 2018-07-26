@@ -46,6 +46,7 @@ do
         echo "TEST MAKE FAILED FOR COMMIT $COMMIT"
         mkdir -p t/perf/test-results
         touch t/perf/test-results/TEST_MAKE_FAILED
+        continue
     fi
     zip $COMMIT-results.zip -r t/perf/test-results ~/task.out ~/task.err
     mv $COMMIT-results.zip ~

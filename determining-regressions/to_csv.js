@@ -26,7 +26,7 @@ commits.reverse().forEach(sha => {
       }
     }
 
-    dict[test.name].push(test.result);
+    dict[test.name].push(test.results);
   });
 
   // Fill in any tests that didnt have results for this commit
