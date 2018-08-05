@@ -1,4 +1,5 @@
 import math
+import sys
 from determine_significant_changes import determine_significant_changes
 
 def get_H_and_D():
@@ -8,11 +9,13 @@ def get_H_and_D():
     """
     H = []
     D = []
-    significant_changes = determine_significant_changes('results.csv')
-    with open('perphecy_raw_number_results.csv') as f:
+    significant_changes = determine_significant_changes(sys.argv[2])
+    with open(sys.argv[1]) as f:
         headers = next(f)
         for line in f:
             columns = line.split(',')
+            if len(columns) == 1:
+                continue
             commit_pair = (columns[0], columns[1])
             test = columns[2].split('.sh')[0]
 
@@ -73,7 +76,7 @@ def perphecy_threshold_algorithm():
                 min_price_thresh[h] = thresh_for_hs
                 min_price_ind[h] = i
 
-    import ipdb; ipdb.set_trace()
+
     C = H # I know this does a reference and not a copy, but it's fine
     while len(C) != 0:
         max_min_price = 0

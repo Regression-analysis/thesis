@@ -298,6 +298,7 @@ def main():
             "commitsha": c1
         })
         if most_recent_profile == None:
+            print("No profile for ", c1)
             continue
 
         lizard1 = db.lizard_results.find_one({ "commitsha": c1 })

@@ -1,4 +1,5 @@
 from numpy import std, mean
+from scipy.stats import ttest_ind
 import math
 import csv
 import sys
@@ -17,7 +18,12 @@ def parse_file(filename):
                     if index is 0:
                         values[index].append(value)
                     else:
-                        values[index].append(None if value is '' else int(value))
+                        if value is '':
+                            values[index].append(None)
+                        else:
+                            str_arr = value[1:-2].split('|')
+                            num_arr = [float(s) for s in str_arr]
+                            values[index].append(num_arr)
             except StopIteration:
                 break
 
@@ -35,27 +41,31 @@ def calc_std_devs(aggregated_tests):
             # calc std dev. we must remove all null values first
             s = std([t for t in test_times if t is not None])
             # convert it to an integer value
-            std_devs[test_name] = int(s)
+            std_devs[test_name] = int(float(s))
 
     return std_devs
 
 
-def significant_change(v, w, std_dev):
-    return math.fabs(v - w) > std_dev*2
+alpha = 0.05
+def significant_change(v1, v2):
+    stuff = ttest_ind(v1, v2)
+    return stuff.pvalue < alpha
 
-def find_significant_changes(aggregated_tests, std_devs, commit_shas):
+def find_significant_changes(aggregated_tests, commit_shas):
     significant_changes = {}
+
     for test_name in aggregated_tests:
         test_times = aggregated_tests[test_name]
         change_list = []
 
         i = -1
         for t1, t2 in zip(test_times, test_times[1:]):
+
             i += 1
             if t1 is None or t2 is None:
                 continue # skip if we have no value for this test
 
-            if significant_change(t1, t2, std_devs[test_name]):
+            if significant_change(t1, t2):
                 change_list.append((commit_shas[i], commit_shas[i+1]))
 
         significant_changes[test_name] = change_list
@@ -85,7 +95,8 @@ def aggregate_subtests(headers, values):
                 elif v2 is None:
                     aggregated_tests[base_name][i] = v1
                 else:
-                    aggregated_tests[base_name][i] = v1 + v2
+                    aggregated_tests[base_name][i] = \
+                        [v1[a] + v2[a] for a in range(0, len(v1))]
 
     return aggregated_tests
 
@@ -106,12 +117,12 @@ def determine_significant_changes(results_file):
     # Aggregate subtests into their total test execution times
     aggregated_tests = aggregate_subtests(headers, values)
     # Calculate std deviation for each test (format is { test_name: std_dev })
-    std_devs = calc_std_devs(aggregated_tests)
+    # std_devs = calc_std_devs(aggregated_tests)
     # Determine all significant regressions. Format is:
     # { test_name: [ (commit_a, commit_b), (commit_a, commit_b) ] }
     significant_changes = find_significant_changes(
             aggregated_tests,
-            std_devs,
+    #       std_devs,
             commit_shas)
 
     return significant_changes

@@ -26,7 +26,16 @@ commits.reverse().forEach(sha => {
       }
     }
 
-    dict[test.name].push(test.results);
+    if(!test.results) {
+      print('no test results for', sha);
+      return;
+    }
+
+    let stringified='[';
+    test.results.forEach(r => stringified += r + '|');
+    stringified += ']';
+
+    dict[test.name].push(stringified);
   });
 
   // Fill in any tests that didnt have results for this commit
