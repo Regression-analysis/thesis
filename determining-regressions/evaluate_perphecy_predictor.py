@@ -13,6 +13,7 @@ def get_I():
     ]
 
 def main():
+    ### This is where you put in the predictor you generated
     predictor = [
         ('New Func X', 44),
         ('Top Chg by Call X', .07),

@@ -1,0 +1,106 @@
+This is the biggest group of stuff. There are a lot of different scripts in
+here.
+
+The first step is "to_csv.js". It grabs the performance test (benchmark) results
+out of the database and spits them into a csv file.
+Actually, it prints it to std out. You run this file like this:
+
+mongo < to_csv.js > benchmark_results.csv
+
+Note that you do "<" before the to_csv file. If you dont, stupid things happen.
+I forget what the problems were. Something silly though.
+
+
+Okay, so now youve got your benchmark_results.csv file. Dope. Now what...
+
+
+
+OH - important note - SOME COMMITS DONT HAVE TESTS. Isn't that wild? It's true
+though, I manually verified. It's only like a couple commits though.
+
+Some also didnt have profile data, so I tossed them out. Don't worry though,
+the results in my paper are accounting for the fact that i tossed some of the
+8798 commits. That's why, in the paper, i say we ran on 8500 or so commits.
+
+
+
+Alright next....
+
+calculate_metrics.py uses the stuff in the database to calculate the metrics for
+the indicators. MAKE SURE YOU SAVE THE OUTPUT TO A FILE
+
+i.e.
+python calculate_metrics.py > calculated_metrics.csv
+
+If you dont, you are going to be SO SAD 20 hours later when it prints in your
+terminal and you cant save that data.
+If you want to watch what's happening while it is running, you can use tail in
+a separate terminal window:
+
+tail -F calculated_metrics.csv
+
+Note that it doesnt really print much out until it finishes, i dont think...
+Actually i cant remember. You know, maybe you DO get results incrementally. It
+doesnt sound like me to NOT print out incremental results, i am an impatient
+person after all.
+
+
+
+
+Alright next....
+
+add_significant_changes_to_indicator.....something......csv
+This file takes your metrics csv file created in the last step, and the results
+spit out by the first step, and determines whether or not there was a regression
+(by doing a t_test, currently) and puts that as the last column in a new csv
+file.
+
+The new csv file, after this step, contains the commit_A, commit_B, benchmark,
+all 8 indicators, and the hit/dismiss results. Now you have everything!
+
+
+The NEXT step is to use the perphecy_threshold_algorithm to run on the csv
+file. It runs the perphecy threshold algorithm as written in the paper to create
+a predictor (a set of indicators). You can take that predictor and then evalute
+it using the "evaluate_perphecy_predictor.py" file. You have to edit the code
+to put your predictor in there yourself.
+
+
+
+
+
+I have one other note i can think of. Scattered throughout each of these files
+is some copy-pasted code like this:
+
+def get_I():
+    return [
+        'Del Func X',
+        'New Func X',
+        'Reached Del Func X',
+        'Top Chg by Call X',
+        'Top X% by Call Chg by >= 10%',
+        'Top Chg by Instr X',
+        'Top Chg Len X',
+        'Top Reached Chg Len X',
+    ]
+
+
+this is DANGEROUS!!! This function is called get_I(), for "get_Index". The index
+in this list is the index in the csv file. So much of my code is based on index
+and not on the name of the indicators.
+
+Okay, its not THAT dangerous. but you have to make sure you dont mix up your
+indices! If you do, things could get out of sync! So make sure you keep the same
+order for things when you are adding indicators and stuff.
+
+Or, if you are just writing your own code, dont worry about it!
+
+
+Its really not that big a deal. But if you're adding an indicator to this code,
+dont go putting it in the middle of the other results. Append the new column
+after the existing columns. It might get dodgy if you dont. Also, this function
+exists in multiple files - you have to update it in multiple places (or
+just refactor it out).
+
+Sorry to leave you with this silly worry. I was in a hurry and wasn't expecting
+the code to be reused - classic SW development, am I right?

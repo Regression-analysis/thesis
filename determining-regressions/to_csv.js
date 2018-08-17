@@ -1,4 +1,5 @@
 // --- This file grabs the results out of the database
+// --- and throw them into a csv file
 
 use research;
 load('commits_in_order.js');

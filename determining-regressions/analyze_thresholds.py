@@ -1,6 +1,16 @@
 import sys
 import math
 
+"""
+
+This is for analyzing the individual indicators. In the original paper,
+do you remember seeing the graphs? There are graphs of hit and dismiss
+rates for each indicator, when considered individually? That's what this
+file does. It makes csv files, which you can open in google sheets
+and easily turn into a graph just like in the paper
+
+"""
+
 
 def evaluate_thresholds(thresholds):
     hit_truths = 0
