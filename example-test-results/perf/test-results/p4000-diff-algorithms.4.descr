@@ -1,0 +1,1 @@
+log -p -3000 --histogram
