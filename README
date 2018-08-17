@@ -1,0 +1,16 @@
+The STEP-1-AND-2 folder is for doig things on digitalocean
+
+The STEP-3 folder is for running lizard on each commit
+
+The STEP-4 folder is for basically everything else
+
+"messing-with-understand" is the code i used to run understand on every
+commit
+
+"nn" is the code i used when toying with neural nets instead of perphecy
+
+
+Don't get too committed (haha, git pun) to my specific code. Hold onto the
+high level ideas and dont be afraid to write from the ground up. I didn't
+write this code to be used black box, because I didn't expect it to be used
+by anyone but me. Classic mistake, right?
