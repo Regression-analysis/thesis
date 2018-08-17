@@ -1,0 +1,21 @@
+This runs lizard on every commit.
+
+You'll have to pip install some things. I never did learn the right
+way to package up a python application, so I always just set up
+a virtual environment and install the dependencies manually.
+
+My tip? just run the file and pip install the thing that is missing
+until it isnt missing anymore hahaha.
+
+I think you'll need to pip install:
+- lizard
+- pymongo
+- gitpython
+
+
+Oh, also, I hardcoded the paths to the repositories. That's easy
+enough to fix though.
+
+
+Keep in mind that "commits_in_reverse_order" needs to hold the
+commit shas that you need to run on.
