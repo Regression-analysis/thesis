@@ -1,0 +1,15 @@
+This nn file is code from me experimenting with using a neural network
+instead of the perphecy threshold algorithm.
+
+I think this is very cryptic stuff, especially because it is uncommented.
+However, I will leave it in here in case you want to try and decrypt the general
+idea of what was going on here.
+
+At a high level, this file takes two arguments. The first is the path to a csv
+file that has the indicator metrics and the hit/dismiss results
+(like the "everything.csv" file). The second is a filename for the output.
+
+Try running it, and then maybe if you are interested, dive in and see what is
+happening. I think this code is written to try out a bunch of different loss
+functions and optimizers in a big nested loop. It might take a long time to
+run.

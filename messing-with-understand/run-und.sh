@@ -1,7 +1,9 @@
 #!/bin/bash
 
+# This file runs understand on every commit
+
 UND="/home/kevin/scitools/bin/linux64/und"
-COMMITS=$(cat git_commits.txt)
+COMMITS=$(cat git_commits.txt)  ################ CHANGE THIS if you want to change which commits you run on
 mkdir -p und_results/
 
 for commit in $COMMITS;

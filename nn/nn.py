@@ -9,7 +9,7 @@ from keras.layers import Dense
 from keras.optimizers import sgd, rmsprop
 
 def main():
-    with open('tryit', 'a') as f:
+    with open(sys.argv[2], 'a') as f:
         optimizers = ['sgd']
         samples = 5
         loss_functions = [G, tp_loss]

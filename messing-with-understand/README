@@ -1,0 +1,12 @@
+This script is for running understand on every commit.
+The "und_process.txt" file is a list of commands that understand understands (ha ha), which
+is mostly configuration stuff. I tried to configure it to collect as MUCH data as possible.
+
+Note: I did not use any of the understand data in my thesis. I did collect it though.
+
+It needs a file called "git_commits" or something (check the script, i dont remember)
+which is just a big list of every commit you want to run on, separated by newlines.
+
+
+***NOT the module.exports javascript style file - just a file where each line 
+is another commit
