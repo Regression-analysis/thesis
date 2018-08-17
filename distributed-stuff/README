@@ -1,0 +1,13 @@
+This is for running everything on digital ocean servers
+
+The main file is called "distribute-task.js", which you run with node.
+
+Don't forget to npm install first.
+
+
+The two bash scripts are now called "dynamic-profile-task.sh" and
+"run-tests-task.sh".
+
+
+EXAMPLE EXECUTION:
+node distribute-task.sh --workers 49 --task dynamic-profile-task.sh
