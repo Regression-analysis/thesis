@@ -1,8 +1,8 @@
 import re
+import math
 from git import Repo
 import pymongo
 from pymongo import MongoClient
-from determine_significant_changes import determine_significant_changes
 
 def get_commit_list(filename):
     commits = []
@@ -61,22 +61,22 @@ def calc_added_and_deleted_functions(d1, d2):
     for filename in d1:
         if filename not in d2:
             # File was deleted, and thus all functions were deleted
-            deleted_functions.extend([(filename, funcname) for funcname in d1[filename]])
+            deleted_functions.extend([(filename, funcname.split('(')[0]) for funcname in d1[filename]])
         else:
             # File is in both, check functions
             for funcname in d1[filename]:
                 if funcname not in d2[filename]:
                     # Function was deleted, add it
-                    deleted_functions.append((filename, funcname))
+                    deleted_functions.append((filename, funcname.split('(')[0]))
             # Now check for added functions
             for funcname in d2[filename]:
                 if funcname not in d1[filename]:
-                    added_functions.append((filename, funcname))
+                    added_functions.append((filename, funcname.split('(')[0]))
 
     for filename in d2:
         if filename not in d1:
             # File was created, and thus all functions were added
-            added_functions.extend([(filename, funcname) for funcname in d2[filename]])
+            added_functions.extend([(filename, funcname.split('(')[0]) for funcname in d2[filename]])
         else:
             # We already handled this case in the previous loop
             pass
@@ -96,31 +96,18 @@ def calc_changed_functions(d1, d2, edited_lines):
     for filename in edited_lines:
         fullpath = '/home/kevin/thesis/git/' + filename
         for change_range in edited_lines[filename]:
-            if fullpath in d1:
+            if fullpath in d1 and fullpath in d2:
                 for funcname in d1[fullpath]:
-                    func_info = d1[fullpath][funcname]
-                    x1 = change_range['before'][0]
-                    x2 = change_range['before'][1]
-                    y1 = int(func_info[1])
-                    y2 = int(func_info[2])
-                    overlap = ranges_overlap(x1, x2, y1, y2)
-                    if overlap is not None:
+                    if funcname in d2[fullpath]:
+                        before = d1[fullpath][funcname]
+                        after = d2[fullpath][funcname]
+                        before_len = before[2] - before[1] + 1
+                        after_len = after[2] - after[1] + 1
+                        change = abs(after_len - before_len)
+                        change_percent = change / before_len
                         # Tuple format: (file, function, and percent change)
                         changed_functions.append(
-                                (fullpath, funcname, overlap / (y2-y1+1)))
-
-            if fullpath in d2:
-                for funcname in d2[fullpath]:
-                    func_info = d2[fullpath][funcname]
-                    x1 = change_range['after'][0]
-                    x2 = change_range['after'][1]
-                    y1 = int(func_info[1])
-                    y2 = int(func_info[2])
-                    overlap = ranges_overlap(x1, x2, y1, y2)
-                    if overlap is not None:
-                        # Tuple format: (file, function, and percent change)
-                        changed_functions.append(
-                                (fullpath, funcname, overlap / (y2-y1+1)))
+                                (fullpath, funcname, change_percent))
 
     return list(set(changed_functions))
 
@@ -280,9 +267,6 @@ def calc_indicators(
 def main():
     # Set up the git repo stuff
     repo = Repo("~/thesis/git/")
-
-    # Get the regressions. This acts as our truth.
-    significant_changes = determine_significant_changes("results.csv")
 
     # Run perphecy on the commits
     commits = get_commit_list("commits_in_order")

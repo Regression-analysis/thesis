@@ -1,6 +1,5 @@
 import math
 import sys
-from determine_significant_changes import determine_significant_changes
 
 def get_H_and_D():
     """
@@ -9,7 +8,6 @@ def get_H_and_D():
     """
     H = []
     D = []
-    significant_changes = determine_significant_changes(sys.argv[2])
     with open(sys.argv[1]) as f:
         headers = next(f)
         for line in f:
@@ -18,13 +16,9 @@ def get_H_and_D():
                 continue
             commit_pair = (columns[0], columns[1])
             test = columns[2].split('.sh')[0]
+            is_significant = True if '1' in columns[11] else False
 
-            this_pair_is_significant = False
-            for cp in significant_changes[test]:
-                if commit_pair[0] in cp[0] and commit_pair[1] in cp[1]:
-                    this_pair_is_significant = True
-
-            if this_pair_is_significant:
+            if is_significant:
                 values = [0 if v == 'False' else float(v) for v in columns[3:]]
                 H.append( (commit_pair[0], commit_pair[1], test, values) )
             else:

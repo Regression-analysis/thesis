@@ -3,6 +3,7 @@ from scipy.stats import ttest_ind
 import math
 import csv
 import sys
+import collections
 
 
 def parse_file(filename):
@@ -46,10 +47,17 @@ def calc_std_devs(aggregated_tests):
     return std_devs
 
 
+def mean(nums):
+    return float(sum(nums)) / max(len(nums), 1)
+
 alpha = 0.05
 def significant_change(v1, v2):
     stuff = ttest_ind(v1, v2)
-    return stuff.pvalue < alpha
+    if not stuff.pvalue < alpha:
+        return False
+
+    # Return true if it slowed down - i.e. the average for v2 is higher than v1
+    return mean(v1) < mean(v2)
 
 def find_significant_changes(aggregated_tests, commit_shas):
     significant_changes = {}
@@ -59,13 +67,16 @@ def find_significant_changes(aggregated_tests, commit_shas):
         change_list = []
 
         i = -1
+        past_runs = collections.deque(maxlen=10)
         for t1, t2 in zip(test_times, test_times[1:]):
 
             i += 1
             if t1 is None or t2 is None:
                 continue # skip if we have no value for this test
 
-            if significant_change(t1, t2):
+            past_runs.append(t1)
+            flattened = [item for sublist in past_runs for item in sublist]
+            if significant_change(flattened, t2):
                 change_list.append((commit_shas[i], commit_shas[i+1]))
 
         significant_changes[test_name] = change_list
