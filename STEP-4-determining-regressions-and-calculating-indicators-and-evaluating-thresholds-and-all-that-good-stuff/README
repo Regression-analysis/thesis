@@ -46,10 +46,17 @@ person after all.
 
 
 
+After this step, calculated_metrics.csv will look like this:
+
+Commit A, Commit B, Benchmark 1, Indicator 1 Value, Indicator 2 Value, ... Indicator 8
+dcbefg, abcb,             p5302,                5,   8, ...   0.58 
+
+
+
 
 Alright next....
 
-add_significant_changes_to_indicator.....something......csv
+add_significant_changes_to_indicator_csv.py
 This file takes your metrics csv file created in the last step, and the results
 spit out by the first step, and determines whether or not there was a regression
 (by doing a t_test, currently) and puts that as the last column in a new csv
@@ -59,11 +66,26 @@ The new csv file, after this step, contains the commit_A, commit_B, benchmark,
 all 8 indicators, and the hit/dismiss results. Now you have everything!
 
 
-The NEXT step is to use the perphecy_threshold_algorithm to run on the csv
+The csv file will now look like this:
+
+Commit A, Commit B, Benchmark 1, Indicator 1 Value, Indicator 2 Value, ... Indicator 8, Hit/Dismiss
+dcbefg, abcb,             p5302,                5,   8, ...   0.58,   0
+dcbefg, abcb,             p7200,                5,   8, ...   0.46,   1
+
+
+
+$ cat calculated_metrics.csv | grep -v "0,0,0,0," > no-zeros.csv
+
+
+
+The NEXT step is to use the perphecy_threshold_algorithm.py to run on the csv
 file. It runs the perphecy threshold algorithm as written in the paper to create
 a predictor (a set of indicators). You can take that predictor and then evalute
 it using the "evaluate_perphecy_predictor.py" file. You have to edit the code
 to put your predictor in there yourself.
+
+{ 'Del Func >= X': 0 }
+
 
 
 
