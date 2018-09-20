@@ -10,4 +10,5 @@ The two bash scripts are now called "dynamic-profile-task.sh" and
 
 
 EXAMPLE EXECUTION:
-node distribute-task.sh --workers 49 --task dynamic-profile-task.sh
+node distribute-task.js --workers 49 --task dynamic-profile-task.sh
+
